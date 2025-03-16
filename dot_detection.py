@@ -183,9 +183,13 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
 
 
 
-            elif len(circle[0]) > 1 : 
-                print(f"{len(circle)} circles detected, Warning")
+            elif len(circles[0]) > 1 : 
+                circle = np.uint16(np.around(circles[0, :]))
+                print(f"{len(circles[0])} circles detected, Warning")
                 num_of_extra_circles += 1
+                for x,y,r in circle:
+                    cv.circle(frame, (x, y), r, (255, 0, 0), 4)  # Draw circle
+                    cv.rectangle(frame, (x - 1, y - 1), (x + 1, y + 1), (255, 128, 0), -1)  # Draw center 
             
             else :
                 print('IDK what happened this is not suppose to be passed here')
@@ -200,6 +204,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
         if real_time_video :
             # Display the frame for immediate feedback
             cv.imshow("Tracking_real_time_video", frame)
+            cv.imshow('Color mask', mask)
 
         if cv.waitKey(1) == ord('q'):
             break
