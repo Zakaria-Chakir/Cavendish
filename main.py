@@ -8,26 +8,27 @@ import ast
 import webbrowser
 import time
 import PIL as pillow
+from Oscillation_modelling import *
 
 start_time = time.time()
 
 ########### Video tracking function ###############
-found_circles = find_contour_mnk(video_input_path = 'Input_videos\Cropped_first_data_vid.mp4', video_output_path = "Output_videos\First_test_tracking.avi", 
-                 pos_circle_txt_path = "Position of circles\Calibration_test_position_of_dot.txt", Countour_finding_param = {
-                            'dp': 1,                   # Inverse of precision (lower = higher precision)
-                            'mindist': 11,              # Minimum distance between circle centers (px)
-                            'canny_threshold': 1,      # Higher = fewer edges (but more precise)
-                            'circle_threshold': 1,     # Higher = stricter circle detection
-                            'min_radius': 1,            # Minimum radius (px)
-                            'max_radius': 5,            # Maximum radius (px)
-                            }, scale_factor = 0.25, lower_color_bdd = np.array([50, 120, 50]), 
-                            upper_color_bdd = np.array([180, 255, 200]), morb_kernel_size = False, real_time_video = True,
-                            mouse_curser = True)
+# found_circles = find_contour_mnk(video_input_path = 'Input_videos\Third_video_data_v2.mp4', video_output_path = "Output_videos\Third_test_tracking.avi", 
+#                  pos_circle_txt_path = "Position of circles\Third_test_position_of_dot.txt", Countour_finding_param = {
+#                             'dp': 1,                   # Inverse of precision (lower = higher precision)
+#                             'mindist': 16,             # Minimum distance between circle centers (px)
+#                             'canny_threshold': 6,      # Higher = fewer edges (but more precise)
+#                             'circle_threshold': 6,     # Higher = stricter circle detection
+#                             'min_radius': 1,            # Minimum radius (px)
+#                             'max_radius': 10,            # Maximum radius (px)
+#                             }, scale_factor = 0.25, lower_color_bdd = np.array([30, 100, 30]), 
+#                             upper_color_bdd = np.array([180, 255, 200]), morb_kernel_size = (4,4), real_time_video = True,
+#                             mouse_curser = False)
 
 
 
 ########### Importing data from a textfile ##############
-with open("Position of circles\Calibration_test_position_of_dot.txt", 'r') as file:
+with open("Position of circles\Third_test_position_of_dot.txt", 'r') as file:
     found_circles = [ast.literal_eval(line.strip()) for line in file]
 found_circles = np.asarray(found_circles)
 
@@ -47,6 +48,15 @@ plt.scatter(fft_freq[idx_max], fft_signal[idx_max], color = 'orange', marker = '
 plt.show()
 
 
+
+##### Curve fit #####
+time, planar_disp = [x/60 for x in range(len(found_circles))], found_circles[:,0]
+coeff, coeff_err = curve_fitting(time, planar_disp, y_err = found_circles[:,2], x_title = 'Time (s)', y_title = 'Planar displacement (px)', model = torsional_oscillator_model)
+for c,e in coeff, coeff_err :
+    print(c, '+/-', e)
+
+
+print()
 print("--- %s seconds ---" % (time.time() - start_time))
 
 

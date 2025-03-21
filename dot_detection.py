@@ -111,6 +111,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
     width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv.CAP_PROP_FPS)
+    print(f'{fps}fps ')
 
     # Define the codec and create VideoWriter object
     fourcc = cv.VideoWriter_fourcc(*'XVID')  # Use XVID codec for better compatibility
@@ -118,8 +119,8 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
 
     # # Get the position of stuff on the window
     if mouse_curser :
-        cv.namedWindow("Frame")
-        cv.setMouseCallback("Frame", mouse_callback)
+        cv.namedWindow("Tracking_real_time_video")
+        cv.setMouseCallback("Tracking_real_time_video", mouse_callback)
 
 
 
@@ -190,6 +191,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
                 for x,y,r in circle:
                     cv.circle(frame, (x, y), r, (255, 0, 0), 4)  # Draw circle
                     cv.rectangle(frame, (x - 1, y - 1), (x + 1, y + 1), (255, 128, 0), -1)  # Draw center 
+                    found_circles.append([x,y,r])
             
             else :
                 print('IDK what happened this is not suppose to be passed here')
