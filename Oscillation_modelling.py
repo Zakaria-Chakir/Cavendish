@@ -4,13 +4,12 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
 
-def torsional_oscillator_model(x, C, I,damp, G, phi, k):
+def torsional_oscillator_model(x, C, I,damp, G, phi, k, kappa):
     # Known values (might be subject to changes)
     m_big = 1.5
     dist_mass = 42.2*10**-3
     m_small = 0.04
     d = 0.05
-    kappa = 3.68*10**-6
 
     # Actual model
     b = 2*damp/I 
@@ -18,7 +17,6 @@ def torsional_oscillator_model(x, C, I,damp, G, phi, k):
     w0 = np.sqrt(kappa_eff/I)
     w1 = np.sqrt(w0**2 - b**2)
     theta = [C*np.e**(-b*t)* np.cos(w1*t+phi) + k for t in x]
-    print(w1, w0)
     return theta 
 
 def rnd_color(n):
@@ -36,13 +34,27 @@ def chi2(x, y, para, err, model):
     chi2 = np.sum(((y - mod_y) / err) ** 2)
     return chi2
 
+def weighted_mean(val, err):
+    values = np.array(val)
+    errors = np.array(err)
+
+    weights = 1 / (errors**2)
+    weighted_mean = np.sum(weights * values) / np.sum(weights)
+    weighted_mean_error = np.sqrt(1 / np.sum(weights))
+    
+    return weighted_mean, weighted_mean_error
+
+
+
 
 def curve_fitting(x, y, y_err, x_title, y_title, model, linecolors = ["#FF9E00", "#00965B", "#0A4A70", "#021D27", "#EF476F"], 
                                 ecolors = ["#FFB500", "#00A86B", "#0F5D8A", "#032A3A", "#D11A58"], 
-                                colors = ["#FFD166", "#06D6A0", "#118AB2", "#073B4C", "#EF476F"], ures = 'rad'):
+                                colors = ["#FFD166", "#06D6A0", "#118AB2", "#073B4C", "#EF476F"], ures = 'rad',
+                                bdds = [[1, 10**-5, 0, 0, 0, 0, 10**-7], [100, 10, 10, 10**-5, 2*np.pi, 400, 10**-4]],
+                                initial_guess = [50, 10**-3,0.0000001, 7*10**-10, 0.01, 150, 4*10**-6]):
     
     def linear_regression_with_errors(x, y, y_err, model):
-        popt, pcov = curve_fit(model, xdata = x, ydata = y, sigma=y_err, absolute_sigma=True, bounds = [[1, 10**-5, 0, 0, 0, 0], [100, 10, 10, 10, 2*np.pi, 400]], maxfev = 10000, p0 = [50, 10**-3,0.0000001, 6*10**-9, 0.01, 150])
+        popt, pcov = curve_fit(model, xdata = x, ydata = y, sigma=y_err, absolute_sigma=True, bounds = bdds, maxfev = 10000, p0 = initial_guess)
         return popt, np.sqrt(np.diag(pcov))
     
     fig, (ax, ax_res) = plt.subplots(nrows=2, ncols=1, figsize=(10,7), gridspec_kw={'height_ratios': [3, 1]})
@@ -70,8 +82,8 @@ def curve_fitting(x, y, y_err, x_title, y_title, model, linecolors = ["#FF9E00",
 
     print('The residuals standard deviation is :', np.std(res, ddof=1))
 
-    for i in range(len(coeff)):
-        print(f'{coeff[i] } +/- {coeff_error[i]}')
+    # for i in range(len(coeff)):
+    #     print(f'{coeff[i] } +/- {coeff_error[i]}')
 
     plt.show()
 
