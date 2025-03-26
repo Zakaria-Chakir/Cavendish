@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
 
-def torsional_oscillator_model(x, C, I,damp, G, phi, k, kappa):
+def torsional_oscillator_model(x, C, I, damp, G, phi, k, kappa,h):
     # Known values (might be subject to changes)
     m_big = 1.5
     dist_mass = 42.2*10**-3
@@ -16,7 +16,7 @@ def torsional_oscillator_model(x, C, I,damp, G, phi, k, kappa):
     kappa_eff = kappa + 2*G*d*((m_small*m_big)/(dist_mass))
     w0 = np.sqrt(kappa_eff/I)
     w1 = np.sqrt(w0**2 - b**2)
-    theta = [C*np.e**(-b*t)* np.cos(w1*t+phi) + k for t in x]
+    theta = [C*np.e**(-b*(t-h))* np.cos(w1*(t-h)+phi) + k for t in x]
     return theta 
 
 def rnd_color(n):
@@ -49,12 +49,12 @@ def weighted_mean(val, err):
 
 def curve_fitting(x, y, y_err, x_title, y_title, model, linecolors = ["#FF9E00", "#00965B", "#0A4A70", "#021D27", "#EF476F"], 
                                 ecolors = ["#FFB500", "#00A86B", "#0F5D8A", "#032A3A", "#D11A58"], 
-                                colors = ["#FFD166", "#06D6A0", "#118AB2", "#073B4C", "#EF476F"], ures = 'rad',
+                                colors = ["#FFD166", "#06D6A0", "#118AB2", "#073B4C", "#EF476F"], ures = '(rad)',
                                 bdds = [[1, 10**-5, 0, 0, 0, 0, 10**-7], [100, 10, 10, 10**-5, 2*np.pi, 400, 10**-4]],
                                 initial_guess = [50, 10**-3,0.0000001, 7*10**-10, 0.01, 150, 4*10**-6]):
     
     def linear_regression_with_errors(x, y, y_err, model):
-        popt, pcov = curve_fit(model, xdata = x, ydata = y, sigma=y_err, absolute_sigma=True, bounds = bdds, maxfev = 10000, p0 = initial_guess)
+        popt, pcov = curve_fit(model, xdata = x, ydata = y, sigma=y_err, absolute_sigma=True, bounds = bdds, maxfev = 100000, p0 = initial_guess, ftol = 10e-48)
         return popt, np.sqrt(np.diag(pcov))
     
     fig, (ax, ax_res) = plt.subplots(nrows=2, ncols=1, figsize=(10,7), gridspec_kw={'height_ratios': [3, 1]})

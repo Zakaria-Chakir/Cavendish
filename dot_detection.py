@@ -112,6 +112,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
     height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv.CAP_PROP_FPS)
     print(f'{fps}fps ')
+    print(total_frames, 'frames')
 
     # Define the codec and create VideoWriter object
     fourcc = cv.VideoWriter_fourcc(*'XVID')  # Use XVID codec for better compatibility
@@ -191,13 +192,15 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
                 for x,y,r in circle:
                     cv.circle(frame, (x, y), r, (255, 0, 0), 4)  # Draw circle
                     cv.rectangle(frame, (x - 1, y - 1), (x + 1, y + 1), (255, 128, 0), -1)  # Draw center 
-                    found_circles.append([x,y,r])
+                
+                found_circles.append([np.mean(circle[:,0]),np.mean(circle[:,1]),np.mean(circle[:,2])])
             
             else :
                 print('IDK what happened this is not suppose to be passed here')
         else:
             # print("No circles detected.")
             num_of_not_found_circle += 1
+            found_circles.append([None, None, None])
 
 
         # Write the frame to output video
@@ -224,4 +227,6 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
         for entry in found_circles :
             f.write(str(entry)+'\n')
 
-    return found_circles
+    time = [i/fps for i in range(total_frames)]
+
+    return found_circles, time
