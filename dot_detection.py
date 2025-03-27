@@ -12,7 +12,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
                             'max_radius': 60            # Maximum radius (px)
                             }, scale_factor = 0.25, lower_color_bdd = np.array([0, 200, 0]), 
                             upper_color_bdd = np.array([255, 255, 255]), morb_kernel_size = (10, 10), real_time_video = True,
-                            mouse_curser = False):
+                            mouse_curser = False, crop_xmin = 0, crop_xmax = -1, crop_ymin = 0, crop_ymax = -1):
     
     """
     Process a video to detect and track circular objects using color filtering and Hough Circle Transform.
@@ -93,7 +93,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
 
     # Function to print the position of the mouse if it is moved 
     def mouse_callback(event, x, y, i, j): # idk what the 2 last param do and idc, i dont need them)
-        if event == cv.EVENT_MOUSEMOVE:
+        if event == cv.EVENT_LBUTTONDOWN:
             print(f"Mouse position: ({x}, {y})")
 
     # Read the input video file
@@ -130,7 +130,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
 
     while cap.isOpened():
         isread, frame = cap.read() # isread litteraly says if the video way read correctly, frame is the frame
-
+        if frame_count == 0 : print(frame.shape)
         # Error handling (case were frame cant be read)
         frame_count += 1
         if not isread:
@@ -142,7 +142,9 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
                 break
 
         # Resize the given frame
-        frame = cv.resize(frame, (int(width * scale_factor), int(height * scale_factor)))
+        frame = frame[crop_xmin:crop_xmax, crop_ymin: crop_ymax, ]
+        
+        
 
         # Convert to HSV color space (apparently this is ideally for color tracking)
         hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
@@ -187,7 +189,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
 
             elif len(circles[0]) > 1 : 
                 circle = np.uint16(np.around(circles[0, :]))
-                print(f"{len(circles[0])} circles detected, Warning")
+                # print(f"{len(circles[0])} circles detected, Warning")
                 num_of_extra_circles += 1
                 for x,y,r in circle:
                     cv.circle(frame, (x, y), r, (255, 0, 0), 4)  # Draw circle
@@ -208,6 +210,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
 
         if real_time_video :
             # Display the frame for immediate feedback
+            # frame = cv.resize(frame, (int(width * scale_factor), int(height * scale_factor)))
             cv.imshow("Tracking_real_time_video", frame)
             cv.imshow('Color mask', mask)
 

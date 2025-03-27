@@ -52,9 +52,52 @@ def curve_fitting(x, y, y_err, x_title, y_title, model, linecolors = ["#FF9E00",
                                 colors = ["#FFD166", "#06D6A0", "#118AB2", "#073B4C", "#EF476F"], ures = '(rad)',
                                 bdds = [[1, 10**-5, 0, 0, 0, 0, 10**-7], [100, 10, 10, 10**-5, 2*np.pi, 400, 10**-4]],
                                 initial_guess = [50, 10**-3,0.0000001, 7*10**-10, 0.01, 150, 4*10**-6]):
-    
+    """
+    Performs curve fitting using non-linear least squares regression, plots the 
+    fitted curve along with residuals, and computes statistical metrics.
+
+    Parameters:
+    ----------
+    x : array-like
+        The independent variable (data points).
+    y : array-like
+        The dependent variable (measured values).
+    y_err : array-like
+        The uncertainties (errors) in y.
+    x_title : str
+        Label for the x-axis.
+    y_title : str
+        Label for the y-axis.
+    model : function
+        The mathematical function to fit to the data.
+    linecolors : list of str, optional
+        Colors for the fitted lines (default provided).
+    ecolors : list of str, optional
+        Colors for error bars (default provided).
+    colors : list of str, optional
+        Colors for data points (default provided).
+    ures : str, optional
+        Units for the residuals axis label (default: '(rad)').
+    bdds : list of lists, optional
+        Bounds for curve fitting as [lower_bounds, upper_bounds].
+    initial_guess : list, optional
+        Initial parameter estimates for curve fitting.
+
+    Returns:
+    -------
+    coeff : array
+        The best-fit parameters for the model.
+    coeff_error : array
+        The standard errors of the fitted parameters.
+
+    Additional Outputs:
+    -------------------
+    - Displays the fitted curve and residuals plot.
+    - Prints the residuals' standard deviation.
+    - Computes and prints the chi-squared statistic.
+    """
     def linear_regression_with_errors(x, y, y_err, model):
-        popt, pcov = curve_fit(model, xdata = x, ydata = y, sigma=y_err, absolute_sigma=True, bounds = bdds, maxfev = 100000, p0 = initial_guess, ftol = 10e-48)
+        popt, pcov = curve_fit(model, xdata = x, ydata = y, sigma=y_err, absolute_sigma=True, bounds = bdds, maxfev = 100000, p0 = initial_guess, ftol = 2.22e-15)
         return popt, np.sqrt(np.diag(pcov))
     
     fig, (ax, ax_res) = plt.subplots(nrows=2, ncols=1, figsize=(10,7), gridspec_kw={'height_ratios': [3, 1]})
