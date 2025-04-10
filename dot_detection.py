@@ -116,7 +116,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
 
     # Define the codec and create VideoWriter object
     fourcc = cv.VideoWriter_fourcc(*'XVID')  # Use XVID codec for better compatibility
-    out = cv.VideoWriter(video_output_path, fourcc, fps, (int(width * scale_factor), int(height * scale_factor)))
+    out = cv.VideoWriter(video_output_path, fourcc, int(np.ceil(fps+1)), (int(crop_xmax-crop_xmin), int(crop_ymax-crop_ymin)))
 
     # # Get the position of stuff on the window
     if mouse_curser :
@@ -142,7 +142,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
                 break
 
         # Resize the given frame
-        frame = frame[crop_xmin:crop_xmax, crop_ymin: crop_ymax, ]
+        frame = frame[crop_xmin:crop_xmax, crop_ymin: crop_ymax]
         
         
 
@@ -214,8 +214,8 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
             cv.imshow("Tracking_real_time_video", frame)
             cv.imshow('Color mask', mask)
 
-        if cv.waitKey(1) == ord('q'):
-            break
+            if cv.waitKey(1) == ord('q'):
+                break
 
     cap.release()
     out.release()
@@ -230,6 +230,6 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
         for entry in found_circles :
             f.write(str(entry)+'\n')
 
-    time = [i/fps for i in range(total_frames)]
+    time = [i/round(fps) for i in range(total_frames)]
 
     return found_circles, time

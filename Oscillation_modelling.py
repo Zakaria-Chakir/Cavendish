@@ -2,21 +2,33 @@ import numpy as np
 import scipy 
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from scipy.optimize import differential_evolution
 
 
-def torsional_oscillator_model(x, C, I, damp, G, phi, k, kappa,h):
+
+def torsional_oscillator_model(x, C, Z, G, k):
+    # All varibles : (x, C, Z, I, damp, G, kappa, phi, k, h, d, m_big, dist_mass, m_small)
     # Known values (might be subject to changes)
     m_big = 1.5
-    dist_mass = 42.2*10**-3
-    m_small = 0.04
-    d = 0.05
+    dist_mass = 3.7256e-02
+    m_small = 38.3e-3
+    d = 50e-3
+    I = 2.3684e-04
+    damp = 1.2587e-07
+    kappa = 3.7617e-08
+
+    # k = 2.9828e+02
+    phi = -3.4453e+00
+
+    # C = 79.83e-03
+    # Z = 7.7772e+01
 
     # Actual model
-    b = 2*damp/I 
-    kappa_eff = kappa + 2*G*d*((m_small*m_big)/(dist_mass))
+    b = damp/(2*I) 
+    kappa_eff = kappa + 2*G*d*((m_small*m_big)/(dist_mass**2))
     w0 = np.sqrt(kappa_eff/I)
     w1 = np.sqrt(w0**2 - b**2)
-    theta = [C*np.e**(-b*(t-h))* np.cos(w1*(t-h)+phi) + k for t in x]
+    theta = [Z*np.tan(C*np.e**(-b*(t))* np.cos(w1*(t)+phi))+ k for t in x]
     return theta 
 
 def rnd_color(n):
@@ -49,7 +61,7 @@ def weighted_mean(val, err):
 
 def curve_fitting(x, y, y_err, x_title, y_title, model, linecolors = ["#FF9E00", "#00965B", "#0A4A70", "#021D27", "#EF476F"], 
                                 ecolors = ["#FFB500", "#00A86B", "#0F5D8A", "#032A3A", "#D11A58"], 
-                                colors = ["#FFD166", "#06D6A0", "#118AB2", "#073B4C", "#EF476F"], ures = '(rad)',
+                                colors = ["#FFD166", "#06D6A0", "#118AB2", "#073B4C", "#EF476F"], ures = '(m)',
                                 bdds = [[1, 10**-5, 0, 0, 0, 0, 10**-7], [100, 10, 10, 10**-5, 2*np.pi, 400, 10**-4]],
                                 initial_guess = [50, 10**-3,0.0000001, 7*10**-10, 0.01, 150, 4*10**-6]):
     """
@@ -107,7 +119,8 @@ def curve_fitting(x, y, y_err, x_title, y_title, model, linecolors = ["#FF9E00",
     coeff, coeff_error = linear_regression_with_errors(x, y, y_err, model)
     ax.errorbar(x, y, yerr=y_err, fmt='o', capsize=6, capthick=1, color=colors[2], ecolor=ecolors[2], elinewidth=1, 
                     markersize=4)
-    ax.plot(x_model, model(x_model, *coeff), color=linecolors[2], linestyle='-', linewidth=1, alpha = 0.6)
+    # ax.plot(x_model, 100*np.cos(2*np.pi*0.0019877*x_model-7.8540e-01)+5.4611e+02)
+    ax.plot(x_model, model(x_model, *coeff), linestyle='-', linewidth=1, alpha = 0.6, color = 'green')
     ax.set_xlabel(x_title, fontsize = 14)
     ax.set_ylabel(y_title, fontsize = 14)
     ax.spines['top'].set_visible(False)
