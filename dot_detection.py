@@ -2,6 +2,7 @@
 # as I see how much optimization it actually needs.
 import cv2 as cv
 import numpy as np
+import time as clock
 
 def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_txt_path : str, Countour_finding_param = {
                             'dp': 1,                   # Inverse of precision (lower = higher precision)
@@ -114,9 +115,9 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
     print(f'{fps}fps ')
     print(total_frames, 'frames')
 
-    # Define the codec and create VideoWriter object
-    fourcc = cv.VideoWriter_fourcc(*'XVID')  # Use XVID codec for better compatibility
-    out = cv.VideoWriter(video_output_path, fourcc, int(np.ceil(fps+1)), (int(crop_xmax-crop_xmin), int(crop_ymax-crop_ymin)))
+    # # Define the codec and create VideoWriter object
+    # fourcc = cv.VideoWriter_fourcc(*'XVID')  # Use XVID codec for better compatibility
+    # out = cv.VideoWriter(video_output_path, fourcc, int(np.ceil(fps+1)), (int(crop_xmax-crop_xmin), int(crop_ymax-crop_ymin)))
 
     # # Get the position of stuff on the window
     if mouse_curser :
@@ -127,7 +128,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
 
     # Keeping track of the circles I found, format of element of the array [x,y,r] center position and then radius
     found_circles = []
-
+    start_time = clock.time()
     while cap.isOpened():
         isread, frame = cap.read() # isread litteraly says if the video way read correctly, frame is the frame
         if frame_count == 0 : print(frame.shape)
@@ -140,9 +141,15 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
             else : 
                 print('A corrupt frame was given. Exiting...')
                 break
+        
+        if frame_count % (1000) == 0 : 
+            print("--- %s seconds ---" % (clock.time() - start_time))
+            print('frame number :', frame_count, 'out of', total_frames)
+            start_time = clock.time()
+
 
         # Resize the given frame
-        frame = frame[crop_xmin:crop_xmax, crop_ymin: crop_ymax]
+        # frame = frame[crop_xmin:crop_xmax, crop_ymin: crop_ymax]
         
         
 
@@ -206,7 +213,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
 
 
         # Write the frame to output video
-        out.write(frame)
+        # out.write(frame)
 
         if real_time_video :
             # Display the frame for immediate feedback
@@ -218,7 +225,7 @@ def find_contour_mnk(video_input_path : str, video_output_path :str, pos_circle_
                 break
 
     cap.release()
-    out.release()
+    # out.release()
     cv.destroyAllWindows()
 
     print(f'Total number of frames : {total_frames}')

@@ -6,19 +6,19 @@ from scipy.optimize import differential_evolution
 
 
 
-def torsional_oscillator_model(x, C, Z, G, k):
+def torsional_oscillator_model(x, C, Z, I, damp, G, kappa, phi, k):
     # All varibles : (x, C, Z, I, damp, G, kappa, phi, k, h, d, m_big, dist_mass, m_small)
     # Known values (might be subject to changes)
     m_big = 1.5
     dist_mass = 3.7256e-02
     m_small = 38.3e-3
     d = 50e-3
-    I = 2.3684e-04
-    damp = 1.2587e-07
-    kappa = 3.7617e-08
+    # I = 2.3714e-04 # 2.3684e-04
+    # damp = 9.5630e-08 # 1.2587e-07
+    # kappa = 3.5840e-08 # 3.7617e-08
 
     # k = 2.9828e+02
-    phi = -3.4453e+00
+    # phi = -2.9825e-01 # -3.4453e+00
 
     # C = 79.83e-03
     # Z = 7.7772e+01
@@ -28,8 +28,9 @@ def torsional_oscillator_model(x, C, Z, G, k):
     kappa_eff = kappa + 2*G*d*((m_small*m_big)/(dist_mass**2))
     w0 = np.sqrt(kappa_eff/I)
     w1 = np.sqrt(w0**2 - b**2)
-    theta = [Z*np.tan(C*np.e**(-b*(t))* np.cos(w1*(t)+phi))+ k for t in x]
-    return theta 
+    displacement = [Z*np.tan(C*np.e**(-b*(t))* np.cos(w1*(t)+phi)) + k for t in x]
+    return displacement
+
 
 def rnd_color(n):
     colors = []
@@ -39,11 +40,17 @@ def rnd_color(n):
     return colors
 
 
-def chi2(x, y, para, err, model):
-    y = np.array(y)
-    mod_y = np.array(model(x,*para))
-    err = np.array(err)
-    chi2 = np.sum(((y - mod_y) / err) ** 2)
+def chi2(x, y, para, err, model, para_present = True):
+    if para_present == True:
+        y = np.array(y)
+        mod_y = np.array(model(x,*para))
+        err = np.array(err)
+        chi2 = np.sum(((y - mod_y) / err) ** 2)
+    else : 
+        y = np.array(y)
+        mod_y = np.array(model(x))
+        err = np.array(err)
+        chi2 = np.sum(((y - mod_y) / err) ** 2)
     return chi2
 
 def weighted_mean(val, err):
